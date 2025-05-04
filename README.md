@@ -63,7 +63,7 @@ This project aims to:
 
 - **Success Rate by Funding Goal**:  
   - <$100K: 43.97% success  
-  - >$10M: 0% success — smaller goals are more achievable.
+  - $10M: 0% success — smaller goals are more achievable.
 
 ---
 
