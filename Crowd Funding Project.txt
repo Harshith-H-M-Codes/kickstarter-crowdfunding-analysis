@@ -1,0 +1,736 @@
+1. Project Overview :
+--------------------------
+This project involves analyzing a Kickstarter crowdfunding dataset using Excel, MySQL, Power BI, and Tableau. The aim is to gain insights into successful campaigns, understand funding patterns, and identify trends based on categories, locations, goals, and time.
+
+2.Data Cleaning in Excel:
+-------------------------------
+Steps Taken:
+1).Convert the Date fields to Natural Time ( Currently the dates are in Epoch time Read the attached Artical for Reference on Epoch Time https://www.epochconverter.com/ )
+==>
+	1.Go to Main_Table excel worksheet.
+	2.Convert the normal data range into table(ctrl+t) with name "Main_Table".
+	3.In created_at column I need to convert epoch/unix time fields into normal time fields. So insert new column next to it and use formula =IFERROR(INT(IF(H2="", "", 		((((H2/60)/60)/24)) + DATE(1970, 1, 1))),"") or =IFERROR(INT(IF(H2 = "","",(H2/86400) + DATE(1970,1,1))),"") and fill down the formula for make changes.
+	4.Select the entire new column for format the cells into short date format "dd-mm-yyyy".
+	5.Now verify the date is correct or not by using https://www.epochconverter.com/ this site.
+	6.For deleting the epoch date column, first select the normal date column and copy the values and go to paste options > paste values - select values & number formatting 	option there.now reference to that column using epoch date column (H)  is not there. So delete the H column now completely and change the new column header name 		into Actual column header name ["created_at "].
+	7.Follow the above steps same for column labels I, J,K,L,M.
+
+2).  Build a Calendar Table using the Date Column Created Date ( Which has Dates from Minimum Dates and Maximum Dates)
+  Add all the below Columns in the Calendar Table using the Formulas.
+   A.Year
+   B.Monthno
+   C.Monthfullname
+   D.Quarter(Q1,Q2,Q3,Q4)
+   E. YearMonth ( YYYY-MMM)
+   F. Weekdayno
+   G.Weekdayname
+   H.Financial Month ( April = FM1, May= FM2  &. March = FM12)
+   I. Financial Quarter ( Quarters based on Financial Month FQ-1 . FQ-2..)
+==>
+	1.Use sheet 2 for build Calendar_Table in Main_Table excel file.
+	2.Give a new column header as "created_at" to cell A1.
+	3.Identify the Maximum and Minimum dates from created_at column in Crowdfunding_projects_1 excel worksheet (sheet1) by applying formulas as =MIN		(Main_Table!H:H) and =MAX(Main_Table1!H:H) and convert it into short date format and note down it seperately after 4th step erase it.
+	4.In A2 cell enter that minimum date and B2 cell enter that Maximum date in sheet 2.
+	5.In cell A3 give this formula for display date between minimum and Maximum range =IF(A2+1 <=$B$2,A2+1,$B$2) and drag till cell A3573.
+	6.Go to cell A1 and press Ctrl+t for convert into table (data range$A:$A3573) and name "Calendar_Table".
+	7.Select the enter Created date column and copy the values and go to paste options > paste values - select values & number formatting option.Now delete the Maximum 		date in cell B2.
+	8. For Year, give column header as Year in B1 cell and use this formula =YEAR(A2) in B2 cell and drag down till end of the table.
+	9. For Monthno, give column header as Monthno in C1 cell and use this formula =MONTH(A2) in C2 cell and drag down till end of the table.
+	10.For Monthfullname, give column header as Monthfullname in D1 cell and use this formula =TEXT(A2,"mmmm") in D2 cell and drag down till end of the table.
+	11.For Quarter, give column header as Quarter in E1 cell and use this formula = CONCATENATE("Q",ROUNDUP(MONTH(A2)/3,0)) in E2 cell and drag down till end 		of the table.
+	12.For YearMonth, give column header as YearMonth in F1 cell and use this formula =TEXT(A2,"yyyy-mmm") in F2 cell and drag down till end of the table.
+	13.For Weekdayno, give column header as Weekdayno in G1 cell and use this formula =WEEKDAY(A2,2) in G2 cell and drag down till end of the table.
+	14.For Weekdayname, give column header as Weekdayname in H1 cell and use this formula =TEXT(A2,"dddd") in H2 cell and drag down till end of the table.
+	15.For Financial Month, give column header as Financial Month in I1 cell and use this formula =CONCATENATE("FM",IF(MONTH(A2)=4,1,MOD(MONTH		(A2)+8,12)+1)) in I2 cell and drag down till end of the table.
+	16.For Financial Quarter, give column header as Financial Quarter in J1 cell and use this formula  = CONCATENATE("FQ-",ROUNDUP(RIGHT(I2,LEN(I2)-2)/3,0)) in 		J2 cell and drag down till end of the table.
+
+3).Build the Data Model using the attached Excel Files.
+==>
+	1.Go to data tab > Get data > import all the excel files[Category,Crowdfunding_Creator,Crowdfunding_Location] in Main_Table excel file.
+	2.Go to power pivot tab > Click Add to Data Model  for Main_Table first. 
+	3.Repeat 2nd step for all the remaining sheets.
+	4.For Data Modelling, In power pivot >Go to design tab > Create Relationship/Manage Relationship > Made relationship between Main_Table and all the remaining 	 	tables[Calender_Table,Category,Crowdfunding_Creator,Crowdfunding_Location].
+	5.Verify the relationship in Diagram view ribbon then Save and Close power pivot and if you need to return to the Power Pivot window later, just go to the Power Pivot 		tab in Excel and click on Manage.
+
+4).Convert the Goal amount into USD using the Static USD Rate.
+==>
+	1. For converting Goal amount into USD ,This two columns are needed - goal and static_usd_rate.
+	2. Insert a New Column with Name "usd_goal" in T column label.
+	3.Use this formula N1*S1 i.e., goal * static_usd_rate in T1 cell and drag down till end of the table.
+
+3. Excel Dashboard:
+----------------------------
+     Total Number of Projects ==>use KPI card. 
+
+     Total Number of Projects based on outcome ==>use Pie chart
+
+     Total Number of Projects based on Locations ==>use Map Chart & Slicer.
+                ==> By using country code column, create country name column in table Crowdfunding_Location.
+	1. select country column and go to data tab there in advance filter,use copy to other location option there then provide the range of country column and new location 		detail and check that unique records only box and press ok.
+	2. select that country code and go new sheet where paste it and create a table as country_list and for each country codes now enter it's country names.
+	3.Then go query editor option , insert Crowdfunding_Location and country_list tables.
+	4.merge this two tables using county code columns.
+	5.In crowdfundind_Location table the country name column will display so use that column for map chart and slicer.
+	6.now delete that sheet of country_list from excel file.
+
+country	country name
+---------     ----------------
+US	United States
+GB	United Kingdom
+FI	Finland
+BE	Belgium
+PL	Poland
+DE	Germany
+FR	France
+AT	Austria
+IT	Italy
+CH	Switzerland
+CN	China
+ES	Spain
+IE	Ireland
+LU	Luxembourg
+NP	Nepal
+CL	Chile
+VE	Venezuela
+CR	Costa Rica
+EC	Ecuador
+JP	Japan
+KR	South Korea
+SK	Slovakia
+BO	Bolivia
+GN	Guinea
+ZA	South Africa
+GR	Greece
+IN	India
+CO	Colombia
+BR	Brazil
+NL	Netherlands
+PT	Portugal
+RO	Romania
+SE	Sweden
+ID	Indonesia
+ML	Mali
+KE	Kenya
+PS	Palestine
+IL	Israel
+NZ	New Zealand
+PR	Puerto Rico
+NO	Norway
+EG	Egypt
+CZ	Czech Republic
+DK	Denmark
+TR	Turkey
+MX	Mexico
+MY	Malaysia
+CA	Canada
+AU	Australia
+AG	Antigua and Barbuda
+AI	Anguilla
+BB	Barbados
+BM	Bermuda
+BS	Bahamas
+BZ	Belize
+CU	Cuba
+DO	Dominican Republic
+SV	El Salvador
+GD	Grenada
+GP	Guadeloupe
+GT	Guatemala
+HT	Haiti
+HN	Honduras
+JM	Jamaica
+MQ	Martinique
+CW	Curaçao
+BQ	Bonaire
+NI	Nicaragua
+PA	Panama
+KN	Saint Kitts and Nevis
+LC	Saint Lucia
+TC	Turks and Caicos Islands
+VC	Saint Vincent and the Grenadines
+VI	U.S. Virgin Islands
+AR	Argentina
+GY	Guyana
+SR	Suriname
+PY	Paraguay
+FK	Falkland Islands
+GF	French Guiana
+TT	Trinidad and Tobago
+PE	Peru
+UY	Uruguay
+FO	Faroe Islands
+GL	Greenland
+LT	Lithuania
+MD	Moldova
+MK	North Macedonia
+MT	Malta
+SI	Slovenia
+RS	Serbia
+AX	Åland Islands
+HU	Hungary
+BY	Belarus
+BG	Bulgaria
+CY	Cyprus
+EE	Estonia
+HR	Croatia
+LV	Latvia
+LI	Liechtenstein
+UA	Ukraine
+BA	Bosnia and Herzegovina
+IS	Iceland
+MM	Myanmar
+KH	Cambodia
+TL	Timor-Leste
+NC	New Caledonia
+VU	Vanuatu
+PG	Papua New Guinea
+TO	Tonga
+FM	Federated States of Micronesia
+GU	Guam
+AS	American Samoa
+FJ	Fiji
+MH	Marshall Islands
+LA	Laos
+PH	Philippines
+TH	Thailand
+VN	Vietnam
+DZ	Algeria
+BW	Botswana
+BJ	Benin
+TD	Chad
+CD	Democratic Republic of the Congo
+CM	Cameroon
+CF	Central African Republic
+CV	Cape Verde
+DJ	Djibouti
+ER	Eritrea
+ET	Ethiopia
+GM	Gambia
+GA	Gabon
+GH	Ghana
+LR	Liberia
+LS	Lesotho
+LY	Libya
+MG	Madagascar
+MW	Malawi
+MU	Mauritius
+NG	Nigeria
+RW	Rwanda
+SN	Senegal
+SO	Somalia
+SS	South Sudan
+SD	Sudan
+TG	Togo
+ST	São Tomé and Príncipe
+TN	Tunisia
+TZ	Tanzania
+UG	Uganda
+BF	Burkina Faso
+NA	Namibia
+ZW	Zimbabwe
+GQ	Equatorial Guinea
+MR	Mauritania
+NE	Niger
+SL	Sierra Leone
+MA	Morocco
+MZ	Mozambique
+SZ	Eswatini
+ZM	Zambia
+BT	Bhutan
+MO	Macau
+BD	Bangladesh
+AF	Afghanistan
+SA	Saudi Arabia
+AE	United Arab Emirates
+QA	Qatar
+KW	Kuwait
+SY	Syria
+AZ	Azerbaijan
+YE	Yemen
+LB	Lebanon
+GE	Georgia
+JO	Jordan
+IQ	Iraq
+RU	Russia
+HK	Hong Kong
+LK	Sri Lanka
+PK	Pakistan
+TJ	Tajikistan
+AM	Armenia
+IR	Iran
+KZ	Kazakhstan
+MN	Mongolia
+OM	Oman
+MV	Maldives
+TW	Taiwan
+PF	French Polynesia
+SG	Singapore
+AD	Andorra
+SX	Sint Maarten
+SC	Seychelles
+BH	Bahrain
+AL	Albania
+SB	Solomon Islands
+VA	Vatican City
+KP	North Korea
+RE	Réunion
+KG	Kyrgyzstan
+MC	Monaco
+KI	Kiribati
+GI	Gibraltar
+KY	Cayman Islands
+ME	Montenegro
+DM	Dominica
+PN	Pitcairn Islands
+CI	Ivory Coast (Côte d'Ivoire)
+CK	Cook Islands
+WS	Samoa
+XK	Kosovo
+SJ	Svalbard and Jan Mayen
+CG	Republic of the Congo
+UZ	Uzbekistan
+AQ	Antarctica
+
+
+     Total Number of Projects based on  Category==>use Column Chart
+
+     Total Number of Projects created by Year , Quarter , Month==>use Line Chart and Slicers
+
+     Successful Projects ==>use KPI card
+
+     Amount Raised ==>use KPI card
+
+     Number of Backers ==>use KPI card
+
+     Avg Number of Days for successful projects ==> use KPI card
+	==>  In Main_Table,use this Formula =IFERROR(DATEDIF(H2,L2,"d"),0) and drag till end of the table and name that new column as "No. of Days".
+
+    Top Successful ProjectsBased on Number of Backers ==>use Area Chart
+
+    Top Successful ProjectsBased on Amount Raised. ==>use Clustered Bar Chart
+
+   Percentage of Successful Projects overall ==>use KPI card
+
+   Percentage of Successful Projects  by Category ==> use Clustered Bar chart
+
+   Percentage of Successful Projects by Year , Quarter, Month etc.. ==>use Line chart
+
+   Percentage of Successful projects by Goal Range ( decide the range as per your need ) ==> use Pie chart with Slicer
+	-- In Main_Table,by refering usd_goal column use this Formula =IFS(T2<100000,"<100K",T2<2000000,"100K to 2000K",T2<4000000,"2000K to 				4000K",T2<8000000,"4000K to 8000K",T2<10000000,"8000K to 10000K",T2>=10000000,">=10000K") and drag till end of the table and name that new column as 		"Goal Range".
+
+Note :- Once All Excel Work over means Rename that "Main_Table.xlsx" File into "Crowdfunding Project.xlsx".
+
+3.Data Upload into MySQL:
+-----------------------------------
+Steps for Importing EXCEL File [Main_Table,Calendar_Table,Category,Crowdfunding_Creator,Crowdfunding_Location]
+into MYSQL tables using LOAD DATA INFILE statement :-
+==>
+1).Cleaning the data in excel file Crowdfunding Project.xlsx (Data Preparation).
+a).use placeholder date 01-01-1970 in place of null values in 'successful_at' column in Main_Table.After finish of importing data to MySQL, again convert this placeholder date to empty cells.  
+b).Don't use percentage/Accounting/currency formats for beside the numbers.
+c).Don't use thousand seperators in numbers.
+d).Delete / and \ if any means in the leading or trailing parts of text values in column.
+
+2).Creating Tables with constraints in MySQL.
+Queries :-
+Database creation:
+CREATE DATABASE IF NOT EXISTS Crowd_Funding;
+USE Crowd_Funding;
+
+-- Calendar_Table:
+CREATE TABLE Calendar_Table (
+    created_at DATE PRIMARY KEY,
+    `Year` INT,
+    Monthno INT,
+    Monthfullname VARCHAR(255),
+    `Quarter` VARCHAR(255),
+    YearMonth VARCHAR(255),
+    Weekdayno INT,
+    Weekdayname VARCHAR(255),
+    `Financial Month` VARCHAR(255),
+    `Financial Quarter` VARCHAR(255)
+);
+
+-- Category:
+CREATE TABLE Category (
+    id INT PRIMARY KEY,
+    `name` VARCHAR(255),
+    parent_id INT,
+    position INT
+);
+
+-- Crowdfunding_Creator:
+CREATE TABLE Crowdfunding_Creator (
+    id BIGINT PRIMARY KEY,
+    `name` VARCHAR(255),
+    chosen_currency VARCHAR(255)
+);
+
+-- Crowdfunding_Location:
+CREATE TABLE Crowdfunding_Location (
+    id INT PRIMARY KEY,
+    displayable_name VARCHAR(255),
+    `type` VARCHAR(255),
+    `name` VARCHAR(255),
+    state VARCHAR(255),
+    short_name VARCHAR(255),
+    is_root VARCHAR(255),
+    country VARCHAR(255),
+    localized_name VARCHAR(255),
+    `country name` VARCHAR(255)
+);
+
+-- Main_Table:
+CREATE TABLE Main_Table (
+    id BIGINT PRIMARY KEY,
+    state VARCHAR(255),
+    `name` VARCHAR(255),
+    country VARCHAR(255),
+    creator_id BIGINT,
+    location_id INT,
+    category_id INT,
+    created_at DATE,
+    deadline DATE,
+    updated_at DATE,
+    state_changed_at DATE,
+    successful_at DATE,
+    launched_at DATE,
+    goal DOUBLE,
+    pledged DOUBLE,
+    currency VARCHAR(255),
+    currency_symbol VARCHAR(255),
+    usd_pledged DOUBLE,
+    static_usd_rate DOUBLE,
+    goal_usd DOUBLE,
+    backers_count INT,
+    spotlight VARCHAR(255),
+    staff_pick VARCHAR(255),
+    blurb VARCHAR(1000),
+    currency_trailing_code VARCHAR(255),
+    disable_communication VARCHAR(255),
+    `no. of days` INT,
+    `Goal Range` VARCHAR(255),
+    FOREIGN KEY (created_at) REFERENCES Calendar_Table(created_at) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (creator_id) REFERENCES Crowdfunding_Creator(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (location_id) REFERENCES Crowdfunding_Location(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES Category(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+3).Saving each sheets/tables in the Excel workbook(Crowdfunding Project.xlsx) as Excel CSV files.
+Steps to Save Each Sheet as CSV:-
+a).Open Crowdfunding Project.xlsx Excel file.
+b).Click on the tab of the sheet you want to save.
+c).Go to File > Save As.
+d).Choose your location:-C:\ProgramData\MySQL\MySQL Server 8.0\Data\crowd_funding
+e).In the "Save as type" dropdown, select CSV (Comma delimited UTF - 8) (*.csv).
+f).Enter a name for the file (e.g., Main_Table.csv).
+g).Click Save.			
+( Main_Table.csv,
+Calender_Table.csv,
+Category.csv,
+Crowdfunding_Creator.csv,
+Crowdfunding_Location.csv )
+NOTE:- A CSV file cannot contain multiple sheets like an Excel file can. Each CSV file corresponds to only one sheet of data. so for this multiple sheets in our Excel file (Crowdfunding Project.xlsx), we need to save each sheet as a separate CSV file.
+
+4). Loading data into each tables in MySQL.
+Queries:-
+-- Load Data into Calendar_Table:
+LOAD DATA INFILE 'Calendar_Table.csv' 
+INTO TABLE Calendar_Table
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES 
+(@var_date, Year, Monthno, Monthfullname, Quarter, YearMonth, Weekdayno, Weekdayname, `Financial Month`, `Financial Quarter`)
+SET created_at = STR_TO_DATE(@var_date, '%d-%m-%Y');
+
+-- Load Data into Category:
+LOAD DATA INFILE 'Category.csv'
+INTO TABLE Category
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(id, name, @parent_id, position)
+SET parent_id = NULLIF(@parent_id, '');
+
+-- Load Data into Crowdfunding_Creator:
+LOAD DATA INFILE 'Crowdfunding_Creator.csv'
+INTO TABLE Crowdfunding_Creator
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(id, @name, @chosen_currency)
+SET 
+    `name` = NULLIF(@name, ''),
+    chosen_currency = NULLIF(@chosen_currency, '');
+
+-- Load Data into Crowdfunding_Location:
+LOAD DATA INFILE 'Crowdfunding_Location.csv'
+INTO TABLE Crowdfunding_Location
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(id, displayable_name, `type`, `name`, @state, short_name, is_root, country, @localized_name, `country name`)
+SET 
+    state = NULLIF(@state, ''),
+    localized_name = NULLIF(@localized_name, '');
+
+-- Load Data into Main_Table:
+LOAD DATA INFILE 'Main_Table.csv'
+INTO TABLE Main_Table
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(id, state, `name`, country, creator_id, @location_id, category_id, @created_at, @deadline, @updated_at, @state_changed_at, @successful_at, @launched_at, goal, pledged, currency, currency_symbol,
+ usd_pledged, static_usd_rate, goal_usd, backers_count, spotlight, staff_pick, blurb, currency_trailing_code, disable_communication, `no. of days`, `Goal Range`)
+SET 
+    location_id = NULLIF(@location_id, ''),
+    created_at = STR_TO_DATE(@created_at, '%d-%m-%Y') ,
+    deadline = STR_TO_DATE(@deadline, '%d-%m-%Y'),
+    updated_at = STR_TO_DATE(@updated_at, '%d-%m-%Y'),
+    state_changed_at = STR_TO_DATE(@state_changed_at, '%d-%m-%Y'),
+    successful_at = STR_TO_DATE(@successful_at, '%d-%m-%Y'),
+    launched_at = STR_TO_DATE(@launched_at, '%d-%m-%Y');
+
+5).Check all the tables whether it is correct or not.
+Queries:-
+------------
+-- Calendar_Table:
+describe Calendar_Table;
+select count(*) from Calendar_Table;
+select * from Calendar_Table;
+
+-- Category:
+describe Category;
+select Count(*) from Category;
+select * from Category;
+
+-- Crowdfunding_Creator:
+describe Crowdfunding_Creator;
+select Count(*) from Crowdfunding_Creator;
+select * from Crowdfunding_Creator;
+
+-- Crowdfunding_Location:
+describe Crowdfunding_Location;
+select Count(*) from Crowdfunding_Location;
+select * from Crowdfunding_Location;
+
+-- Main_Table:
+describe Main_Table;
+select Count(*) from Main_Table;
+
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE Main_Table
+SET successful_at = NULL
+WHERE successful_at = '1970-01-01';
+
+SET SQL_SAFE_UPDATES = 1;
+
+select * from  Main_Table;
+
+4. Exploratory Data Analysis in MySQL:
+-------------------------------------------------
+-- Total Number of Projects
+CREATE TABLE Total_Projects AS
+SELECT COUNT(id) AS total_projects FROM Main_Table;
+
+select * from Total_Projects;
+
+-- Total Number of Projects based on outcome
+CREATE TABLE Project_Outcome_Summary AS
+SELECT state, COUNT(id) AS total_projects
+FROM Main_Table
+GROUP BY state;
+
+select * from Project_Outcome_Summary;
+
+-- Total Number of Projects based on Countries
+CREATE TABLE Total_Projects_By_Country AS
+SELECT cl.`country name` AS `country name`, COUNT(mt.id) AS total_projects
+FROM Main_Table mt
+JOIN Crowdfunding_Location cl ON mt.location_id = cl.id
+GROUP BY cl.`country name`;
+
+select * from Total_Projects_By_Country;
+
+-- Total Number of Projects based on  Category
+CREATE TABLE Total_Projects_By_Category AS
+SELECT c.name AS category_name, COUNT(mt.id) AS total_projects
+FROM Main_Table mt
+JOIN Category c ON mt.category_id = c.id
+GROUP BY c.name;
+
+select * from Total_Projects_By_Category;
+
+-- Total Number of Projects created by Year , Quarter , Month
+CREATE TABLE Total_Projects_By_Date AS
+SELECT 
+    c.`Year` AS `Year`,
+    c.`Quarter` AS `Quarter`,
+    c.Monthfullname AS `Month`,
+    COUNT(mt.id) AS total_projects
+FROM Main_Table mt
+JOIN Calendar_Table c ON mt.created_at = c.created_at
+GROUP BY c.`Year`, c.`Quarter`, c.Monthfullname
+ORDER BY `Year`, `Quarter`, `Month`;
+
+select * from Total_Projects_By_Date;
+
+-- Successful Projects
+CREATE TABLE Total_Successful_Projects AS
+SELECT COUNT(*) AS successful_projects
+FROM Main_Table
+WHERE state = 'successful';
+
+select * from Total_Successful_Projects;
+
+-- Amount Raised
+CREATE TABLE Total_Amount_Raised AS
+SELECT CONCAT('$', SUM(usd_pledged)) AS total_amount_raised
+FROM Main_Table;
+
+select * from  Total_Amount_Raised;
+
+--  Number of Backers
+CREATE TABLE Total_Number_of_Backers AS
+SELECT SUM(backers_count) AS total_number_of_backers
+FROM Main_Table;
+
+select * from Total_Number_of_Backers;
+
+-- Avg Number of Days for successful projects
+CREATE TABLE Avg_Number_of_Days_Successful_Projects AS
+SELECT FLOOR(AVG(`no. of days`)) AS avg_number_of_days
+FROM Main_Table
+WHERE state = 'successful';
+
+select * from Avg_Number_of_Days_Successful_Projects;
+
+-- Top Successful Projects based on Number of Backers
+CREATE TABLE Top_Successful_Projects_By_Backers AS
+SELECT id, `name`, created_at, backers_count
+FROM Main_Table
+WHERE state = 'successful'
+ORDER BY backers_count DESC
+LIMIT 10;  
+
+select * from Top_Successful_Projects_By_Backers;
+
+-- Top Successful Projects based on Amount Raised
+CREATE TABLE Top_Successful_Projects_By_Amount_Raised AS
+SELECT id, name, created_at, usd_pledged
+FROM Main_Table
+WHERE state = 'successful'
+ORDER BY usd_pledged DESC
+LIMIT 10;  
+
+select * from Top_Successful_Projects_By_Amount_Raised;
+
+ -- Percentage of Successful Projects overall
+CREATE TABLE Percentage_Successful_Projects AS
+WITH ProjectCounts AS (
+    SELECT  COUNT(*) AS total_projects,SUM(state = 'successful') AS successful_projects
+    FROM Main_Table
+)
+SELECT CONCAT(FLOOR(successful_projects * 100.0 / total_projects),'%') AS percentage_successful_projects
+FROM ProjectCounts;
+
+select * from Percentage_Successful_Projects;
+
+-- Percentage of Successful Projects by Category
+CREATE TABLE Percentage_Successful_Projects_By_Category AS
+WITH CategoryCounts AS (
+    SELECT c.`name` AS category_name,COUNT(*) AS total_projects,SUM(mt.state = 'successful') AS successful_projects
+    FROM Main_Table mt
+    JOIN Category c ON mt.category_id = c.id
+    GROUP BY c.name
+)
+SELECT category_name,total_projects,successful_projects,CONCAT(FLOOR(successful_projects * 100.0 / total_projects), '%') AS percentage_successful_projects
+FROM CategoryCounts;
+
+select * from Percentage_Successful_Projects_By_Category;
+
+-- Percentage of Successful Projects by Year , Quarter, Month
+CREATE TABLE Percentage_Successful_Projects_By_Date AS
+WITH ProjectCounts AS (
+    SELECT c.Year,c.Quarter,c.Monthfullname,COUNT(*) AS total_projects,SUM(state = 'successful') AS successful_projects
+    FROM Main_Table mt
+    JOIN Calendar_Table c ON mt.created_at = c.created_at
+    GROUP BY c.Year, c.Quarter, c.Monthfullname
+)
+SELECT `Year`,`Quarter`,Monthfullname,total_projects,CONCAT(FLOOR(successful_projects * 100.0 / total_projects), '%') AS percentage_successful_projects
+FROM ProjectCounts;
+
+select * from Percentage_Successful_Projects_By_Date;
+
+-- Percentage of Successful projects by Goal Range
+CREATE TABLE Percentage_Successful_Projects_By_Goal_Range AS
+WITH GoalRangeCounts AS (
+    SELECT `Goal Range`,COUNT(*) AS total_projects,SUM(state = 'successful') AS successful_projects
+    FROM Main_Table
+    GROUP BY `Goal Range`
+)
+SELECT `Goal Range`,total_projects,successful_projects,CONCAT(FLOOR(successful_projects * 100.0 / total_projects), '%') AS percentage_successful_projects
+FROM GoalRangeCounts;
+
+select * from Percentage_Successful_Projects_By_Goal_Range;	
+
+5. Power BI Dashboard:
+-------------------------------
+a.Establish Connection Between MySQL and Power BI desktop for getting data from MySQL.
+b.Clean the data in power query editor and load the data for create visualizaions.
+c. Build Data modelling between each tables.(Fact table - Main Table, Dimension tables - Calendar table, Category, Crowdfunding Creator, Crowdfunding Location.)
+
+1. Total Number of Projects based on outcome ==> Card & Slicer 
+DAX measure:-
+Combined Title = 
+VAR SelectedState = SELECTEDVALUE('main_table'[state])
+VAR ProjectCount = 
+    COUNT('main_table'[id])  // Total count of projects
+VAR FilteredCount = 
+    CALCULATE(
+        COUNT('main_table'[id]), 
+        'main_table'[state] = SelectedState
+    )
+VAR FormattedCount = 
+    IF(
+        ISBLANK(SelectedState),
+        IF(ProjectCount >= 1000, FORMAT(ProjectCount / 1000, "0") & "K", FORMAT(ProjectCount, "0")),
+        IF(FilteredCount >= 1000, FORMAT(FilteredCount / 1000, "0") & "K", FORMAT(FilteredCount, "0"))
+    )
+VAR CapitalizedState = 
+    IF(
+        NOT ISBLANK(SelectedState),
+        UPPER(LEFT(SelectedState, 1)) & MID(SelectedState, 2, LEN(SelectedState) - 1),
+        "Total Projects"
+    )
+RETURN
+IF(
+    ISBLANK(SelectedState),
+    "Total Projects" & UNICHAR(10) & FormattedCount,
+    CapitalizedState & " Projects" & UNICHAR(10) & FormattedCount
+)
+
+2. Total Number of Projects based on Countries ==> Slicer 
+3. Total Number of Projects based on  Category ==>Slicer
+4. Total Number of Projects created by Year , Quarter , Month ==>Slicer 
+5.Amount Raised ==> Card 
+6.  Number of Backers ==> Card 
+7.Avg Number of Days for successful projects ==>Card 
+8. Top Successful Projects based on Number of Backers ==> Ribbon Chart
+9.Top Successful Projects based on Amount Raised==>Stacked Bar Chart
+10.Percentage of Successful Projects overall ==> Donut Chart 
+11.Percentage of Successful Projects by Category ==> Stacked Bar Chart 
+DAX Measure:-
+Percentage of Projects by State = 
+    DIVIDE (
+        COUNTROWS ( 'main_table' ),
+        CALCULATE (
+            DISTINCTCOUNT ( 'main_table'[id] ),
+            ALLEXCEPT ( 'main_table', 'category'[name] )
+        ),
+        0
+    )  
+12.Percentage of Successful Projects by Year, Quarter, Month ==> Area Chart
+13.Percentage of Successful projects by Goal Range ==> Pie chart 
+
