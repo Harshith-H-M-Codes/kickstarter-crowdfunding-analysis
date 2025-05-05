@@ -91,3 +91,5 @@ This project aims to:
 This analysis provides actionable insights into what makes Kickstarter campaigns successful. Campaigns with realistic goals, strong narratives, and high engagement are more likely to succeed. This project also enhanced our ability to analyze, visualize, and communicate complex data through tools like Excel, SQL, Power BI — skills that are critical in real-world data analytics projects.
 
 ---
+For detailed steps on data cleaning, transformation, and dashboard creation, refer to the Crowdfunding Project.txt file in the repository.
+All raw datasets are available inside the `Source_Files/` folder.
