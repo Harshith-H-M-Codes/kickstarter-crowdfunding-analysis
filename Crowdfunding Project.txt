@@ -1,4 +1,4 @@
-1. Project Overview :
+1. Project Overview:
 --------------------------
 This project involves analyzing a Kickstarter crowdfunding dataset using Excel, MySQL, Power BI, and Tableau. The aim is to gain insights into successful campaigns, understand funding patterns, and identify trends based on categories, locations, goals, and time.
 
